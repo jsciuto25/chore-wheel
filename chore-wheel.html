@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Family Chore Wheel</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --luke:    #c5d94a;
+    --dad:     #a78bca;
+    --mom:     #f5c842;
+    --james:   #74a8e0;
+    --annabel: #e8705a;
+    --bg: #1a1f2e;
+    --card: #252c3f;
+    --text: #f0f4ff;
+    --muted: #8892aa;
+    --border: rgba(255,255,255,0.07);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Nunito', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    gap: 24px;
+  }
+
+  header { text-align: center; }
+
+  header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 4vw, 3rem);
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #f5c842, #e8705a, #a78bca);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .week-label {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 6px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .next-rotation {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 3px;
+    font-weight: 600;
+    opacity: 0.7;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .card.luke::before    { background: var(--luke); }
+  .card.dad::before     { background: var(--dad); }
+  .card.mom::before     { background: var(--mom); }
+  .card.james::before   { background: var(--james); }
+  .card.annabel::before { background: var(--annabel); }
+
+  .name-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.15rem;
+    color: #1a1f2e;
+    flex-shrink: 0;
+  }
+
+  .luke    .avatar { background: var(--luke); }
+  .dad     .avatar { background: var(--dad); color: #fff; }
+  .mom     .avatar { background: var(--mom); }
+  .james   .avatar { background: var(--james); }
+  .annabel .avatar { background: var(--annabel); color: #fff; }
+
+  .name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    letter-spacing: 0.5px;
+  }
+
+  .chores {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .chores li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #ccd4ef;
+  }
+
+  .chore-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  .luke    .chore-dot { background: var(--luke); }
+  .dad     .chore-dot { background: var(--dad); }
+  .mom     .chore-dot { background: var(--mom); }
+  .james   .chore-dot { background: var(--james); }
+  .annabel .chore-dot { background: var(--annabel); }
+
+  footer {
+    font-size: 0.75rem;
+    color: var(--muted);
+    opacity: 0.5;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏠 Family Chore Wheel</h1>
+  <div class="week-label" id="week-label">Week of —</div>
+  <div class="next-rotation" id="next-rotation">Next rotation: —</div>
+</header>
+
+<div class="grid" id="chore-grid"></div>
+
+<footer>Rotates automatically every Sunday at 7 AM</footer>
+
+<script>
+  // --- CONFIGURATION ---
+  // Baseline: week of April 27, 2026 = rotation 0 (confirmed from photo)
+  // The rotation "clicks over" each Sunday at 7:00 AM
+  const BASELINE_SUNDAY = new Date('2026-04-26T07:00:00'); // Sun Apr 26 2026, 7am local
+  const ROTATE_HOUR = 7; // 7 AM
+
+  const people = [
+    { key: 'luke',    name: 'Luke',    initial: 'L' },
+    { key: 'dad',     name: 'Dad',     initial: 'D' },
+    { key: 'mom',     name: 'Mom',     initial: 'M' },
+    { key: 'james',   name: 'James',   initial: 'J' },
+    { key: 'annabel', name: 'Annabel', initial: 'A' },
+  ];
+
+  // Each slot has 2 chores. Person[i] gets slot[(i + rotation) % 5].
+  const choreSlots = [
+    ['Set, Clear & Wipe the Table', 'Vacuum'],
+    ['Clean Mudroom', 'Help w/ Dinner & Wipe Counters'],
+    ['Clean Windows & Mirrors', 'Handwash, Dry & Put Away Dishes'],
+    ['Pickup Sticks & Backyard Toys', 'Feed Dog, Pickup Poop & Dog Toys'],
+    ['Take Out Trash & Recycling', 'Empty & Load Dishwasher'],
+  ];
+
+  // --- DATE LOGIC ---
+
+  // Returns the Sunday-at-7am that started the current chore week
+  function getCurrentWeekStart(now) {
+    const d = new Date(now);
+    const day  = d.getDay();   // 0 = Sunday
+    const hour = d.getHours();
+
+    let daysBack = day;
+    // If it's Sunday but before 7am, we're still in last week
+    if (day === 0 && hour < ROTATE_HOUR) daysBack = 7;
+
+    d.setDate(d.getDate() - daysBack);
+    d.setHours(ROTATE_HOUR, 0, 0, 0);
+    return d;
+  }
+
+  function getRotation(now) {
+    const weekStart  = getCurrentWeekStart(now);
+    const msPerWeek  = 7 * 24 * 60 * 60 * 1000;
+    const weeksDiff  = Math.round((weekStart - BASELINE_SUNDAY) / msPerWeek);
+    return ((weeksDiff % people.length) + people.length) % people.length;
+  }
+
+  function getNextSunday(now) {
+    const current = getCurrentWeekStart(now);
+    const next = new Date(current);
+    next.setDate(next.getDate() + 7);
+    return next;
+  }
+
+  function fmtWeekOf(sundayDate) {
+    // Show Monday as "week of" date (more natural)
+    const d = new Date(sundayDate);
+    d.setDate(d.getDate() + 1);
+    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+
+  function fmtNextRotation(date) {
+    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) + ' at 7:00 AM';
+  }
+
+  // --- RENDER ---
+  function render() {
+    const now      = new Date();
+    const rotation = getRotation(now);
+    const weekStart = getCurrentWeekStart(now);
+    const nextSun  = getNextSunday(now);
+
+    document.getElementById('week-label').textContent    = `Week of ${fmtWeekOf(weekStart)}`;
+    document.getElementById('next-rotation').textContent = `Next rotation: ${fmtNextRotation(nextSun)}`;
+
+    const grid = document.getElementById('chore-grid');
+    grid.innerHTML = '';
+
+    people.forEach((person, i) => {
+      const slotIndex = (i + rotation) % choreSlots.length;
+      const chores    = choreSlots[slotIndex];
+
+      const card = document.createElement('div');
+      card.className = `card ${person.key}`;
+      card.innerHTML = `
+        <div class="name-row">
+          <div class="avatar">${person.initial}</div>
+          <div class="name">${person.name}</div>
+        </div>
+        <ul class="chores">
+          ${chores.map(c => `
+            <li>
+              <span class="chore-dot"></span>
+              <span>${c}</span>
+            </li>`).join('')}
+        </ul>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  render();
+  // Re-check every minute so it flips right at 7am if the page is already open
+  setInterval(render, 60 * 1000);
+</script>
+</body>
+</html>
