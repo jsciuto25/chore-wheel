@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Summer Goals</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  width:100%; height:100%;
+  overflow: hidden;
+  background: transparent;
+  font-family: 'Nunito', sans-serif;
+  color: #fff;
+}
+
+.wrap {
+  width:100%; height:100%;
+  padding: 1.5vw 1.5vw;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vw;
+  background: rgba(10, 15, 30, 0.85);
+  overflow: hidden;
+}
+
+.section-title {
+  font-family: 'Baloo 2', cursive;
+  font-size: 1.8vw;
+  font-weight: 800;
+  color: #FFD166;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  padding-bottom: 0.4vw;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.kid-block { flex-shrink: 0; }
+
+.kid-heading {
+  font-family: 'Baloo 2', cursive;
+  font-size: 1.6vw;
+  font-weight: 800;
+  padding: 0.3vw 0.8vw;
+  border-radius: 0.5vw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.3vw;
+}
+.kid-heading.annabel { background: rgba(255,107,157,0.2); color: #FF8DB8; }
+.kid-heading.james   { background: rgba(59,191,184,0.18); color: #5DDBD5; }
+.kid-heading.luke    { background: rgba(255,179,71,0.18);  color: #FFC45A; }
+.kid-pct { font-size: 1.3vw; opacity: 0.75; }
+
+.goal-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5vw;
+  padding: 0.2vw 0.3vw;
+}
+.g-icon { font-size: 1.2vw; width: 1.6vw; text-align: center; flex-shrink: 0; }
+.g-body { flex:1; min-width:0; }
+.g-name {
+  font-size: 1.2vw;
+  font-weight: 800;
+  color: rgba(255,255,255,0.88);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+.goal-row.done .g-name { color:rgba(255,255,255,0.3); text-decoration:line-through; }
+
+.g-bar-track {
+  height: 0.4vw;
+  background: rgba(255,255,255,0.1);
+  border-radius: 1vw;
+  overflow: hidden;
+  margin-top: 0.2vw;
+}
+.g-bar-fill { height:100%; border-radius:1vw; }
+.g-bar-fill.annabel { background: linear-gradient(90deg,#c9426e,#FF6B9D); }
+.g-bar-fill.james   { background: linear-gradient(90deg,#1E8F89,#3BBFB8); }
+.g-bar-fill.luke    { background: linear-gradient(90deg,#C47E00,#FFB347); }
+.g-bar-fill.complete { background: linear-gradient(90deg,#16A34A,#4ADE80) !important; }
+
+.g-val { font-size: 0.9vw; color:rgba(255,255,255,0.4); font-weight:700; margin-left: 0.3vw; }
+
+.g-check {
+  width: 1.4vw; height: 1.4vw; border-radius:50%;
+  border: 0.15vw solid rgba(255,255,255,0.2);
+  flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size: 0.7vw;
+}
+.g-check.done { background:#4ADE80; border-color:#4ADE80; }
+
+.divider { height:1px; background:rgba(255,255,255,0.07); flex-shrink:0; margin: 0.3vw 0; }
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap"></div>
+
+<script>
+const PROGRESS = {
+  a_tri:false, a_bike:0, a_books:0, a_math:0,
+  a_scout:false, a_swim:false, a_merit:0,
+  j_books:0, j_phys:0, j_tri:false, j_pres:false,
+  j_math:0, j_hand:0, j_game:false,
+  l_letters:0, l_add:false,
+};
+
+const KIDS = [
+  { id:"annabel", name:"Annabel", emoji:"🎀", goals:[
+    {id:"a_tri",    title:"Sprint Triathlon",    type:"check", icon:"🏊"},
+    {id:"a_bike",   title:"Bike 100 miles",      type:"count", icon:"🚴", target:100},
+    {id:"a_books",  title:"Read 10 books",       type:"count", icon:"📚", target:10},
+    {id:"a_math",   title:"Math sheets 3×/wk",  type:"count", icon:"✏️", target:30},
+    {id:"a_scout",  title:"First Class Rank",    type:"check", icon:"🏅"},
+    {id:"a_swim",   title:"Swim a mile",         type:"check", icon:"🌊"},
+    {id:"a_merit",  title:"10 Merit Badges",     type:"count", icon:"🎖️", target:10}
+  ]},
+  { id:"james", name:"James", emoji:"🏊", goals:[
+    {id:"j_books",  title:"Read 15 books",       type:"count", icon:"📚", target:15},
+    {id:"j_phys",   title:"Activity 3×/wk",      type:"count", icon:"⚽", target:30},
+    {id:"j_tri",    title:"Kids Triathlon",      type:"check", icon:"🏊"},
+    {id:"j_pres",   title:"Give presentation",  type:"check", icon:"🎤"},
+    {id:"j_math",   title:"Math sheets 3×/wk",  type:"count", icon:"✏️", target:30},
+    {id:"j_hand",   title:"Handwriting 3×/wk",  type:"count", icon:"🖊️", target:30},
+    {id:"j_game",   title:"Host a gameshow",     type:"check", icon:"🎮"}
+  ]},
+  { id:"luke", name:"Luke", emoji:"⭐", goals:[
+    {id:"l_letters",title:"Know 26 letters",     type:"count", icon:"🔤", target:26},
+    {id:"l_add",    title:"Single-digit addition",type:"check",icon:"➕"}
+  ]}
+];
+
+function frac(g) {
+  const v = PROGRESS[g.id];
+  if(g.type==="count") return Math.min(1,(v||0)/g.target);
+  return v ? 1 : 0;
+}
+function kidPct(kid) {
+  return Math.round(kid.goals.reduce((s,g)=>s+frac(g),0)/kid.goals.length*100);
+}
+
+const wrap = document.getElementById("wrap");
+wrap.innerHTML = `<div class="section-title">☀️ SUMMER GOALS 2026</div>`;
+
+KIDS.forEach((kid, ki) => {
+  const pct = kidPct(kid);
+  let html = `<div class="kid-block">
+    <div class="kid-heading ${kid.id}">
+      <span>${kid.emoji} ${kid.name}</span>
+      <span class="kid-pct">${pct}%</span>
+    </div>`;
+
+  kid.goals.forEach(g => {
+    const f = frac(g);
+    const done = f >= 1;
+    const v = PROGRESS[g.id]||0;
+
+    if(g.type==="count") {
+      const pf = Math.round(f*100);
+      html += `<div class="goal-row ${done?'done':''}">
+        <span class="g-icon">${g.icon}</span>
+        <div class="g-body">
+          <div class="g-name">${g.title} <span class="g-val">${v}/${g.target}</span></div>
+          <div class="g-bar-track"><div class="g-bar-fill ${kid.id} ${done?'complete':''}" style="width:${pf}%"></div></div>
+        </div>
+      </div>`;
+    } else {
+      html += `<div class="goal-row ${done?'done':''}">
+        <span class="g-icon">${g.icon}</span>
+        <div class="g-body"><div class="g-name">${g.title}</div></div>
+        <div class="g-check ${done?'done':''}">${done?'✓':''}</div>
+      </div>`;
+    }
+  });
+
+  html += `</div>`;
+  if(ki < KIDS.length - 1) html += `<div class="divider"></div>`;
+  wrap.innerHTML += html;
+});
+</script>
+</body>
+</html>
